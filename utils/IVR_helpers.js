@@ -185,6 +185,18 @@ class VoiceHelper {
     }
 }
 
+const ModdedATVoice = ({
+    AT_apiKey,
+AT_username,
+AT_virtualNumber,
+})=>{ 
+        return ATVOICE = AfricasTalking({
+            apiKey: AT_apiKey,
+            username: AT_username,
+        }).VOICE;
+}
+
 module.exports = {
     VoiceHelper,
+    ModdedATVoice
 };

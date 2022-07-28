@@ -1,6 +1,6 @@
 'use strict';
 const router = require('express').Router();
-const { VoiceHelper } = require('../utils/IVR_helpers');
+const { VoiceHelper,ModdedATVoice } = require('../utils/IVR_helpers');
 const { PrismaClient } = require('@prisma/client');
 
 const prisma = new PrismaClient();
@@ -24,12 +24,78 @@ router.get('/bulk', (req, res) => {
     // http://localhost:3000/bulk?phones=0705212848,0773841221
     var phones = req.query.phones;
     var phoneArray = phones.split(',');
+
+    
+function makeCall_Promisified(to) {
+    return new Promise((resolve, reject) => {
+        
+        if (to.startsWith('+254')) {
+            //Good to go
+        } else if (to.startsWith('254')) {
+            var badNo = to.split('');
+            badNo.splice(0, 3);
+            badNo = badNo.join('');
+            to = `+254${badNo}`;
+        } else {
+            //Add a prefix of +254
+            to = `+254${to}`;
+        }
+    console.log({ to }); 
+    const options = {
+        // Set your Blanqx's Cloud phone number in international format
+        callFrom: process.env.AT_VIRTUAL_NUMBER,
+        // Set the numbers you want to call to in a comma-separated list
+        callTo: [to],
+        clientRequestId:'bulk'
+    };
+
+    console.log({ options });
+
+    
+    // Make the call
+    ModdedATVoice({
+        AT_apiKey:process.env.AT_APP_APIKEY,
+        AT_username:process.env.AT_APP_USERNAME
+    })
+        .call(options)
+        .then((callData) => {
+            // console.log({ callData })
+            // console.log(Object.keys(callData)) 
+            resolve({
+                status:'succesful',
+                ...callData
+            });
+        })
+        .catch((err) => {
+            console.log({ err });
+            reject({
+                status:'failed',
+                ...err
+            })
+        });
+
+    });
+}
+
+
     var phoneArray_Promisified = phoneArray.map(phone => {
         // replace the first 0 with +254
         phone = phone.replace(/^0/, '254').trim(); 
         return makeCall_Promisified(`+${phone}`);
     });
     
+Promise.all(phoneArray_Promisified)
+.then((queuedCalls) => {
+    console.log(queuedCalls);
+    res.send(queuedCalls);
+})
+.catch(err => {
+    signale.error({err});
+})
+
+
+    
+});
 router.post('/business', async (req, res) => {
     const { business_name, business_at_phone, business_at_apiKey, business_at_username, number_of_agents } = req.body;
     const business = await prisma.business.create({
@@ -89,6 +155,12 @@ router.post('/callback_url', async (req, res) => {
         let callerNumber = req.body.callerNumber;
         let destinationNumber = req.body.destinationNumber;
 
+        if(req.body.clientRequestId === 'bulk'){
+            callActions= ATVoice.saySomething({
+                speech:'Hi there! I am hereby welcoming you to watch a new movie. The black panther.'
+            })
+        }
+        
         if (clientDialedNumber) {
             // assumes a browser tried to make a call to either virtualNumber(Dequeue) or a customer number(outgoing call)
 
