@@ -18,7 +18,6 @@ router.get('/', async (req, res) => {
 });
 
 router.post('/capability-token', async (req, res) => {
-   
     let clientname = req.body.clientname || 'doctor';
     let callRepresentativeName = ATVoice.generateATClientName({
         isForInitialization: true,
@@ -70,5 +69,5 @@ router.post('/callback_url', async (req, res) => {
         return res.sendStatus(500);
     }
 });
- 
+
 module.exports = router;
