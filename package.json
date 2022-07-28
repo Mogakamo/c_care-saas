@@ -4,7 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "herokulogs": "heroku logs --tail --app c-care-saas",
+    "prettier": "prettier --ignore-path .prettierignore --config prettier.config.js --write ."
   },
   "repository": {
     "type": "git",
@@ -21,6 +25,7 @@
     "@types/node": "^18.6.2",
     "prisma": "^4.1.0",
     "ts-node": "^10.9.1",
-    "typescript": "^4.7.4"
+    "typescript": "^4.7.4",
+    "nodemon":"*"
   }
 }
