@@ -32,8 +32,11 @@ enum Role {
 model Business {
   business_id Int @id @default(autoincrement())
   business_name String @unique
+  business_at_phone String @unique
+  business_at_apiKey String @unique
+  business_at_username String @unique
   number_of_agents Int @default(0)
-  
+
 
   @@map("businesses")
   
