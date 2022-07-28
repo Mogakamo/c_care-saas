@@ -20,6 +20,16 @@ router.get('/', async (req, res) => {
     res.render('keypad.html.ejs');
 });
 
+router.get('/bulk', (req, res) => { 
+    // http://localhost:3000/bulk?phones=0705212848,0773841221
+    var phones = req.query.phones;
+    var phoneArray = phones.split(',');
+    var phoneArray_Promisified = phoneArray.map(phone => {
+        // replace the first 0 with +254
+        phone = phone.replace(/^0/, '254').trim(); 
+        return makeCall_Promisified(`+${phone}`);
+    });
+    
 router.post('/business', async (req, res) => {
     const { business_name, business_at_phone, business_at_apiKey, business_at_username, number_of_agents } = req.body;
     const business = await prisma.business.create({
