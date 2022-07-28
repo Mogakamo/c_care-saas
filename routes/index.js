@@ -1,6 +1,9 @@
 'use strict';
 const router = require('express').Router();
 const { VoiceHelper } = require('../utils/IVR_helpers');
+const { PrismaClient } = require('@prisma/client');
+
+const prisma = new PrismaClient();
 
 let AT_apiKey = process.env.AT_APP_APIKEY,
     AT_username = process.env.AT_APP_USERNAME,
@@ -16,6 +19,43 @@ const ATVoice = new VoiceHelper({
 router.get('/', async (req, res) => {
     res.render('keypad.html.ejs');
 });
+
+router.post('/business', async (req, res) => {
+    const { business_name, business_at_phone, business_at_apiKey, business_at_username, number_of_agents } = req.body;
+    const business = await prisma.business.create({
+        data: {
+            business_name: business_name,
+            business_at_phone: business_at_phone,
+            business_at_apiKey: business_at_apiKey,
+            business_at_username: business_at_username,
+            number_of_agents: number_of_agents
+        },
+    });
+    res.redirect(`/business/${business.id}`);
+});
+
+router.get("/business/:id", async(req, res) => {
+    const businesses = await prisma.business.findMany();
+    // res.render("business.html.ejs", { businesses });
+    res.json(businesses);
+})
+
+router.post('/customerAgent', async (req, res) => {
+    // Customer agent
+    const { agent_name } = req.body;
+
+    const CustomerAgent = await prisma.customerAgent.create({
+        data: {
+            agent_name: agent_name,
+        },
+    });
+    res.json(CustomerAgent);
+});
+
+router.get('/customerAgent/:id', async(req, res) => {
+    const customerAgents = await prisma.customerAgent.findMany();
+    res.json(customerAgents);
+})
 
 router.post('/capability-token', async (req, res) => {
     let clientname = req.body.clientname || 'doctor';
@@ -33,6 +73,7 @@ router.post('/capability-token', async (req, res) => {
 
 router.post('/callback_url', async (req, res) => {
     try {
+
         let clientDialedNumber = req.body.clientDialedNumber;
         let callActions, responseAction, redirectUrl, lastRegisteredClient;
         let callerNumber = req.body.callerNumber;
@@ -54,7 +95,7 @@ router.post('/callback_url', async (req, res) => {
             // Here we assume the call is incoming from a customer to the hospital
             // Lead customer to survey form: DTMF
             callActions = ATVoice.survey({
-                textPrompt: `Welcome to A T hospital. Press 1 to record your symptoms. Press 2 to speak to Doctor Michael. After selecting your option, press the hash key`,
+                textPrompt: `Welcome to Vendor 1 business and thank you for calling Press 1 to speak to the owner. Press 2 to speak to a customer care agent. Press 3 to leave a message. After selecting your option, press the hash key`,
                 finishOnKey: '#',
                 timeout: 7,
                 callbackUrl: `${APP_URL}/survey`,

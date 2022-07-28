@@ -17,7 +17,7 @@ model User {
   password String @db.VarChar(255)
   role Role @default(USER)
   createdAt DateTime @default(now())
-  customerAgent CustomerAgent[]
+  // customerAgent CustomerAgent[]
   
 
   @@map("users")
@@ -44,7 +44,7 @@ model Business {
 
 model CustomerAgent {
   customer_id Int @id @default(autoincrement())
-  id User @relation(fields: [customer_id], references: [user_id])
+  // id User @relation(fields: [customer_id], references: [user_id])
   agent_name String @unique
 
   @@map("customer_agents")
